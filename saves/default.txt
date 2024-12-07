@@ -1,0 +1,7 @@
+Money=63
+SpeedPrice=2
+Bobber=3.000000
+DamagePrice=3
+Damage=1
+HealthPrice=5
+Health=3000

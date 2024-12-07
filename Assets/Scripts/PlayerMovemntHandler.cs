@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovemntHandler : MonoBehaviour
 {
@@ -9,6 +11,7 @@ public class PlayerMovemntHandler : MonoBehaviour
     [SerializeField] Fisherman fisher;
     [SerializeField] FishingCheck fishingCheck;
     [SerializeField] Bobber bobber;
+    [SerializeField] AnimationStateChanger stateChanger;
 
     [Header("Cameras")]
     [SerializeField] Camera mainCamera;
@@ -17,6 +20,10 @@ public class PlayerMovemntHandler : MonoBehaviour
     [Header("Parameters")]
     [SerializeField] bool isFishing = false;
     [SerializeField] float waitTime = 1f;
+
+    [Header("Parameters")]
+    [SerializeField] TextMeshProUGUI AlertText;
+    [SerializeField] ShopController shop;
 
     bool canSwitch = true;
 
@@ -37,11 +44,26 @@ public class PlayerMovemntHandler : MonoBehaviour
                 fisher.Jump();
             }
         }
+        if (Input.GetKeyDown(KeyCode.E) && fisher.shop == "HealthShop" && fisher.currMoney >= shop.healthPrice) {
+                Debug.Log("Health Get!");
+                fisher.BuyHealth(shop.healthPrice);
+                shop.SetText(2);
+        }
+        if (Input.GetKeyDown(KeyCode.E) && fisher.shop == "DamageShop" && fisher.currMoney >= shop.damagePrice) {
+                Debug.Log("Damage Get!");
+                fisher.BuyDamage(shop.damagePrice);
+                shop.SetText(3);
+        }
+        if (Input.GetKeyDown(KeyCode.E) && fisher.shop == "BobberShop" && fisher.currMoney >= shop.speedPrice) {
+                Debug.Log("Speed Get!");
+                fisher.BuyBobberSpeed(shop.speedPrice);
+                shop.SetText(4);
+        }
 
         if (fishingCheck.GetCanFish())
         {
 
-            if (Input.GetKeyDown(KeyCode.Space) && canSwitch)
+            if (Input.GetKeyDown(KeyCode.E) && canSwitch)
             {
                 if (!isFishing)
                 {
@@ -53,8 +75,13 @@ public class PlayerMovemntHandler : MonoBehaviour
                 }
             }
 
+
             StartCoroutine(FishSwitchCooldownRoutine());
         }
+
+         if (Input.GetKeyDown(KeyCode.Escape)) {
+            SceneManager.LoadScene("MainMenu");
+         }
     }
 
     void FixedUpdate()
@@ -69,6 +96,12 @@ public class PlayerMovemntHandler : MonoBehaviour
             if (Input.GetKey(KeyCode.D))
             {
                 movement = 1;
+            }
+
+            if (movement != 0) {
+               stateChanger.ChangeAnimationState("FisherManWalk"); 
+            } else {
+                stateChanger.ChangeAnimationState("FisherManIdleFull");
             }
 
             fisher.Move(movement);
@@ -90,7 +123,7 @@ public class PlayerMovemntHandler : MonoBehaviour
 
     void StartFishing()
     {
-        Debug.Log("Started Fishing");
+        //Debug.Log("Started Fishing");
         isFishing = true;
         mainCamera.enabled = false;
         fishingCamera.enabled = true;
@@ -98,7 +131,7 @@ public class PlayerMovemntHandler : MonoBehaviour
 
     void StopFishing()
     {
-        Debug.Log("Stopped Fishing");
+        //Debug.Log("Stopped Fishing");
         isFishing = false;
         mainCamera.enabled = true;
         fishingCamera.enabled = false;

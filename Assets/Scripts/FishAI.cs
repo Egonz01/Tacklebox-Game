@@ -7,7 +7,9 @@ public class FishAI : MonoBehaviour
     [SerializeField] public Fish currFish;
     [SerializeField] Fisherman targetFisherman;
     [SerializeField] float fishSightDistance = 5f;
-    [SerializeField] float howClose = 2f;
+    float randomChanceTimePast = 0f;
+    float randomAttackTimePast = 0f;
+    bool isIdling = false;
 
     delegate void AIState();
     AIState currentState;
@@ -25,7 +27,9 @@ public class FishAI : MonoBehaviour
 
     void Update()
     {
-        AITick();
+        if (currFish != null) {
+          AITick();  
+        }
     }
 
     void AITick(){
@@ -61,10 +65,29 @@ public class FishAI : MonoBehaviour
     }
 
     void MoveState() {
-        if(Vector3.Distance(transform.position, targetFisherman.transform.position) > howClose){
-            currFish.MoveToward(targetFisherman.transform.position);
-        }else{
-            currFish.Stop();
+        if(Vector3.Distance(currFish.transform.position, targetFisherman.transform.position) > currFish.attackRange){
+            float randomChance = Random.value;
+            randomChanceTimePast += Time.deltaTime;
+
+            if (randomChanceTimePast >= currFish.movementChanceTimer) {
+                randomChanceTimePast = 0f;
+                if (randomChance <= currFish.moveTowardChance) {
+                    Debug.Log("moving toward");
+                    currFish.MoveFish(targetFisherman.transform.position, 1);
+                } else if (randomChance <= currFish.moveTowardChance + currFish.moveAwayChance) {
+                    currFish.MoveFish(targetFisherman.transform.position, 2);
+                    Debug.Log("moving away");
+                } else {
+                    Debug.Log("idling");
+                    StartCoroutine(IdleTimeRoutine());
+                }
+            }
+
+        } else {
+            if (Vector3.Distance(currFish.transform.position, targetFisherman.transform.position) <= currFish.attackRange) {
+                ChangeState(AttackState);
+            }
+            return;
         }
 
         if(!CanSeeTarget())
@@ -74,5 +97,37 @@ public class FishAI : MonoBehaviour
             return;
         }
 
+    }
+
+    void AttackState(){
+        if(Vector3.Distance(currFish.transform.position, targetFisherman.transform.position) <= currFish.attackRange){
+            float randomChance = Random.value;
+            randomAttackTimePast += Time.deltaTime;
+
+            if (randomAttackTimePast >= currFish.attackChanceTimer) {
+                randomAttackTimePast = 0f;
+                if (randomChance <= currFish.attackChance) {
+                    Debug.Log("attacking");
+                    currFish.MoveFish(targetFisherman.transform.position, 3);
+                } else if (randomChance <= currFish.attackChance + currFish.jumpOverChance) {
+                    currFish.MoveFish(targetFisherman.transform.position, 4);
+                    Debug.Log("big jump");
+                } else {
+                    Debug.Log("attack idling");
+                    StartCoroutine(IdleTimeRoutine());
+                }
+            }
+        } else {
+            ChangeState(MoveState);
+        }
+
+    }
+
+    IEnumerator IdleTimeRoutine() {
+        if(!isIdling) {
+            isIdling = true;
+            yield return new WaitForSeconds(Random.Range(currFish.idleTimeMin, currFish.idleTimeMax));
+            isIdling = false;
+        }
     }
 }

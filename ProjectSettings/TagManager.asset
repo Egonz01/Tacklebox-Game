@@ -8,6 +8,10 @@ TagManager:
   - Fish
   - Bobber
   - FishDetector
+  - FishZone
+  - HealthShop
+  - DamageShop
+  - BobberShop
   layers:
   - Default
   - TransparentFX

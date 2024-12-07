@@ -35,15 +35,27 @@ public class Bobber : MonoBehaviour
         if (other.CompareTag("Fish") && !waiting)
         {
             hasFishOnLine = true;
-            Debug.Log("Reel!");
+            //Debug.Log("Reel!");
             StartCoroutine(FishLineRoutine());
         }
     }
 
     IEnumerator FishLineRoutine() {
-        Debug.Log("Waiting");
+        //Debug.Log("Waiting");
         waiting = true;
         yield return new WaitForSeconds(fishLineTime);
         waiting = false;
+    }
+
+    public void IncreaseSpeed(float increase) {
+        moveSpeed += increase;
+    }
+
+    public float GetSpeed() {
+        return moveSpeed;
+    }
+
+    public void SetSpeed(float speed) {
+        moveSpeed = speed;
     }
 }
